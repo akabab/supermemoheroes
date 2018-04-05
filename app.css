@@ -1,0 +1,14 @@
+#grid {
+  background-color: #333;
+  display: flex;
+  flex-wrap: wrap;
+  width: 60rem;
+}
+
+.card {
+  flex: auto;
+  background-repeat: no-repeat;
+  height: 10rem;
+  width: 10rem;
+  background-size: cover;
+}
