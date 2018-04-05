@@ -34,9 +34,14 @@ const newGame = async () => {
   const heroes = (await getHeroes())
     .filter(hero => hero.images.xs.split('/xs/')[1] !== 'no-portrait.jpg')
 
+  const cards = newDeck(heroes)
+
   const game = {
-    cards: newDeck(heroes),
-    players: []
+    cards,
+    players: [
+      { life: 100, cards: cards.filter((c, i) => i < 5) },
+      { life: 100, cards: cards.filter((c, i) => i < 5) },
+    ]
   }
 
   App.innerHTML = Game(game)

@@ -27,9 +27,17 @@ const Header = players => `
   </div>
 `
 
+const Sidebar = player => `
+  <div class='sidebar'>
+    ${player.cards.map(Card).join('')}
+  </div>
+`
+
 const Board = game => `
   <div id='board'>
+    ${Sidebar(game.players[0])}
     ${Grid(game.cards)}
+    ${Sidebar(game.players[1])}
   </div>
 `
 
