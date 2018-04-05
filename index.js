@@ -1,20 +1,10 @@
 import { baseUrl } from './shared.js'
+import { Game } from './components.js'
 
 const getHeroes = () => fetch(`${baseUrl}/all.json`)
   .then(response => response.json())
 
 const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min
-
-const createCardElement = card => `
-  <div class='card' style='background-image: url(${card.hero.images.sm});'>
-    ${card.hero.name}
-  </div>
-`
-const createGrid = cards => `
-  <div id='grid'>
-    ${cards.map(createCardElement).join('')}
-  </div>
-`
 
 const shuffle = arr => {
   let i = arr.length
@@ -38,18 +28,18 @@ const newDeck = (heroes, size = 6 * 5 / 2) => {
   return cards
 }
 
-const gameContainer = document.getElementById('game')
+const App = document.getElementById('app')
 
 const newGame = async () => {
-  const heroes = await getHeroes()
+  const heroes = (await getHeroes())
+    .filter(hero => hero.images.xs.split('/xs/')[1] !== 'no-portrait.jpg')
 
-  const cards = newDeck(heroes)
+  const game = {
+    cards: newDeck(heroes),
+    players: []
+  }
 
-  console.log(cards)
-
-  const grid = createGrid(cards)
-
-  gameContainer.innerHTML = grid
+  App.innerHTML = Game(game)
 }
 
 newGame()
