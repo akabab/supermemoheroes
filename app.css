@@ -10,7 +10,7 @@
 }
 
 #gcd {
-  font-size: 14rem;
+  font-size: 6rem;
   color: yellow;
 }
 
@@ -47,6 +47,7 @@
   background-color: hotpink;
   background-repeat: no-repeat;
   background-size: cover;
+  background-position: center;
   margin: 0.5rem;
   user-select: none;
   cursor: pointer;
@@ -60,8 +61,13 @@
 .card:hover {
   transform: scale(1.04);
 }
+
 .owned, .lost {
   cursor: default;
+}
+
+.owned:hover, .lost:hover {
+  transform: scale(1);
 }
 
 .owned {
@@ -73,3 +79,17 @@
   box-shadow: inset 0 0 46px 32px #333333;
   filter: grayscale(1);
 }
+
+.button-black {
+  background-color: black;
+  border-color: black;
+}
+.button-black.button-clear,
+.button-black.button-outline {
+  background-color: transparent;
+  color: black;
+}
+.button-black.button-clear {
+  border-color: transparent;
+}
+

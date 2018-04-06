@@ -1,6 +1,6 @@
 import './db.js'
 import { dispatch, getState } from './store.js'
-import { onRender } from './render.js'
+import { onRender, request } from './render.js'
 import { Game } from './components.js'
 
 const App = document.getElementById('app')
@@ -8,7 +8,7 @@ App.addEventListener('mousedown', e => {
   const t = e.target
   const id = t.dataset.id
 
-  if (id === undefined || t.owned) return
+  if (id === undefined || (t.state && t.state.class)) return
 
   e.target.style.transform = `scale(1.2)`
 
@@ -31,23 +31,36 @@ const clear = onRender(() => {
     const url = `${location.origin}?play=${getState().playId}`
     return App.innerHTML = `Waiting at <a href="${url}">${url}</a>`
   }
-  if (!getState().players) return
+  if (!getState().players || !getState().cards.length) return
   App.innerHTML = Game(getState())
   const gcdElem = document.getElementById('gcd')
-  const cards = document.getElementsByClassName('card')
+  const cards = Array.from(document.getElementsByClassName('card'))
+  cards.forEach((c, i) => c.state = getState().cards[i])
   clear()
-  const style = card => card.flipped
-  onRender(() => {
+  setInterval(request, 100)
+  let scores = []
+  const stop = onRender(() => {
     const state = getState()
+    scores = state.scores.length ? state.scores : scores
+    console.log(scores[0] + scores[1])
+
+    if (scores[0] + scores[1] === cards.length / 2) {
+      const you = state.players[0] === state.playerId ? 0 : 1
+      const them = Number(!you)
+      App.innerHTML = scores[you] > scores[them]
+        ? `You Won (${scores[you]} vs ${scores[them]})`
+        : `You Loose (${scores[you]} vs ${scores[them]})`
+      return stop()
+    }
+    const now = Date.now()
     if (state.error) return App.innerHTML = state.error.message
-    state.cards.forEach((card, i) => {
-      const cl = cards[i].classList
-      cl.toggle('flipped', !card.flipped)
-      if (card.class && !cards[i].owned) {
-        cards[i].owned = true
-        cl.add(card.class)
-      }
-    })
-    gcdElem.textContent = state.gcdDiff > 0 ? (state.gcdDiff/1000).toFixed(1) : ''
+    for (const card of cards) {
+      const cl = card.classList
+      const { ts, class: className } = card.state
+      cl.toggle('flipped', !className && (!ts || ((now - ts) > 2700)))
+      cl.add(className)
+    }
+    const diff = 1500 - (now - state.gcd)
+    gcdElem.textContent = diff > 0 ? (diff/1000).toFixed(1) : ''
   })
 })

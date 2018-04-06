@@ -43,47 +43,39 @@ export const effect = async (state, payload, dispatch) => {
       const cards = newDeck(heroes)
 
       db.cards.set(cards)
+      state.gcd = Date.now()
 
-      return dispatch({
-        type: 'update',
-        state: {
-          gcd: Date.now(),
-          action: {}
-        }
-      })
+      return
     }
     case 'db': {
       db = payload.db
-      db.cards.on('value', snapshot =>
-        dispatch({ type: 'update', state: { cards: snapshot.val() } }))
+      const cards = (await db.cards.once('value')).val()
+      state.cards = cards
+      const avgPing = []
+      cards.forEach((c, i) =>
+        c.pair = cards.find((b, j) => b.hero.id === c.hero.id && i !== j))
+      db.actions.on('child_added', snapshot => {
+        const action = snapshot.val()
+        const card = cards[action.id]
+        card.ts = Number(snapshot.key)
+        card.player = action.player
+        if ((card.ts - card.pair.ts) < 2800) {
+          card.pair.owner = card.owner = action.player
+          card.pair.ownedAt = card.ownedAt = card.ts
+          card.pair.class = card.class = action.player === state.playerId
+            ? 'owned'
+            : 'lost'
 
-      db.actions.on('child_added', snapshot =>
-        dispatch({ type: 'action-display', action: snapshot.val() }))
-      return
-    }
-    case 'gcd': {
-      clearTimeout(gcdTimeout)
-      if (state.gcdDiff < 0) return
-      gcdTimeout = setTimeout(dispatch, 100, { type: 'gcd', gcd: state.gcd })
-      return
-    }
-    case 'action-display': {
-      const { action } = payload
-      if (action.type === 'flip') {
-        const card = state.cards[action.id]
-        const match = state.cards
-          .find(c => c.flipped && c.hero.id === card.hero.id && c !== card)
-
-        if (match) {
-          dispatch({
-            pair: [ card, match ],
-            type: 'pick-pair',
-            class: action.player === state.playerId ? 'owned' : 'lost'
-          })
-        } else {
-          setTimeout(dispatch, 2800, { type: 'unflip', id: payload.action.id })
+          const scores = [
+            cards.filter(c => c.owner === state.playerId).length / 2,
+            cards.filter(c => c.owner !== state.playerId).length / 2,
+          ]
+          dispatch({  type: 'update', state: { scores } })
         }
-      }
+        console.log(state.scores)
+        request()
+      })
+
       return
     }
     case 'action': {
@@ -93,12 +85,13 @@ export const effect = async (state, payload, dispatch) => {
 
       action.player = state.playerId
 
+      console.log('actionnn')
       clearTimeout(queuedAction)
       if (diff < 1500) {
         diff > 1200 && (queuedAction = setTimeout(dispatch, 1550 - diff, payload))
         return
       }
-      dispatch({ type: 'gcd', gcd: now })
+      state.gcd = now
       return db.actions.child(now).set(action)
     }
   }
