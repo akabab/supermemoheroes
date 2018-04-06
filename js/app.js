@@ -4,6 +4,18 @@ import { onRender } from './render.js'
 import { Game } from './components.js'
 
 const App = document.getElementById('app')
+App.addEventListener('click', e => {
+  const id = e.target.dataset.id
+
+  if (id === undefined) return
+
+  const action = {
+    type: 'flip',
+    id
+  }
+
+  dispatch({ type: 'action', action })
+})
 
 onRender(() => {
   const state = getState()

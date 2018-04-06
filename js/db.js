@@ -38,7 +38,7 @@ export const init = (new Promise(async (s, f) => {
     if (!play) return f(Error('game not found'))
     if (play.ended) return f(Error('game already over'))
 
-    const player = await playRef.child('players').child(1).once('value')
+    const player = (await playRef.child('players').child(1).once('value')).val()
     if (player !== null) return f(Error('not your game'))
     // Join game
     playRef.child('players').child(1).set(playerId)

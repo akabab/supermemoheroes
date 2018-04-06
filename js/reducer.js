@@ -1,3 +1,12 @@
+const actionsReducer = (state, action) => {
+  switch (action.type) {
+    case 'flip': {
+      state.cards[action.id].flipped = true
+      return state
+    }
+  }
+}
+
 export const reducer = (state, payload) => {
   switch (payload.type) {
     case 'play': return { ...state, play: payload.state }
@@ -15,15 +24,25 @@ export const reducer = (state, payload) => {
       const { action } = payload
       const diff = now - state.gcd
 
+      console.log({action})
+      if (action.player && action.player !== state.playerId) {
+        return {
+          ...actionsReducer(state, action),
+          actions: Object.assign(state.actions || {}, { [now]: action }),
+        }
+      }
+
+      action.player = state.playerId
+
       if (diff < 1500) {
         if (diff < 250) return { ...state, queuedAction: action }
         return state
       }
 
       return {
-        ...state,
+        ...actionsReducer(state, action),
         gcd: now,
-        actions: Object.assign(actions, { [now]: action }),
+        actions: Object.assign(state.actions || {}, { [now]: action }),
         queuedAction: undefined
       }
     }

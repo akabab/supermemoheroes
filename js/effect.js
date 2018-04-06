@@ -67,8 +67,10 @@ export const effect = async (state, payload, dispatch) => {
     case 'action': {
       const now = Date.now()
       clearTimeout(actionQueueTimeout)
+      console.log({action: payload.action, state})
       if (state.queuedAction !== payload.action) {
-        if (action.player !== state.playerId) return
+        if (payload.action.player !== state.playerId) return
+
         return db.actions.child(now).set(payload.action)
       }
       actionQueueTimeout = setTimeout(dispatch, Date.now() - state.gcd, payload)
