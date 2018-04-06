@@ -1,9 +1,7 @@
 const actionsReducer = (state, action) => {
   switch (action.type) {
     case 'flip': {
-      if (!state.cards) return state
-      state.cards[action.id].flipped = action.player
-
+      state.cards.length && (state.cards[action.id].flipped = action.player)
       return state
     }
   }
@@ -19,8 +17,14 @@ export const reducer = (state, payload) => {
       gcd: payload.gcd,
       gcdDiff: 1500 - (Date.now() - payload.gcd)
     }
+    case 'pick-pair': {
+      console.log(payload)
+      payload.pair.forEach(card => card.class = payload.class)
+      return state
+    }
     case 'unflip': {
-      state.cards[payload.id].flipped = false
+      const card = state.cards[payload.id]
+      card.class || (card.flipped = false)
       return state
     }
     case 'players': {

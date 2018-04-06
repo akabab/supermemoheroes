@@ -1,10 +1,6 @@
-const style = card => card.flipped
-  ? `background-image: url(${card.hero.images.sm});`
-  : `background-color: hotpink;`
 
 const Card = (card, i) => `
-  <div class='card' data-id=${i} style='${style(card)}'>
-    ${card.hero.name}
+  <div class='card flipped' data-id=${i} style='background-image: url(${card.hero.images.sm})'>
   </div>
 `
 

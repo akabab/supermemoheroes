@@ -1,7 +1,7 @@
 import { effect } from './effect.js'
 import { reducer } from './reducer.js'
 
-let state = { gcd: Date.now() } // initial State
+let state = { gcd: Date.now(), cards: [] } // initial State
 
 const updateState = payload => {
   state = reducer(state, payload)

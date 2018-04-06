@@ -8,7 +8,7 @@ App.addEventListener('mousedown', e => {
   const t = e.target
   const id = t.dataset.id
 
-  if (id === undefined) return
+  if (id === undefined || t.owned) return
 
   e.target.style.transform = `scale(1.2)`
 
@@ -39,14 +39,14 @@ const clear = onRender(() => {
   const style = card => card.flipped
   onRender(() => {
     const state = getState()
-    if (state.error) {
-      return App.innerHTML = state.error.message
-    }
-    const now = Date.now()
+    if (state.error) return App.innerHTML = state.error.message
     state.cards.forEach((card, i) => {
-      cards[i].style.background = card.flipped
-        ? `url(${card.hero.images.sm})`
-        : `hotpink`
+      const cl = cards[i].classList
+      cl.toggle('flipped', !card.flipped)
+      if (card.class && !cards[i].owned) {
+        cards[i].owned = true
+        cl.add(card.class)
+      }
     })
     gcdElem.textContent = state.gcdDiff > 0 ? (state.gcdDiff/1000).toFixed(1) : ''
   })

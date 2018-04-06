@@ -68,8 +68,21 @@ export const effect = async (state, payload, dispatch) => {
       return
     }
     case 'action-display': {
-      if (payload.action.type === 'flip') {
-        setTimeout(dispatch, 2000, { type: 'unflip', id: payload.action.id })
+      const { action } = payload
+      if (action.type === 'flip') {
+        const card = state.cards[action.id]
+        const match = state.cards
+          .find(c => c.flipped && c.hero.id === card.hero.id && c !== card)
+
+        if (match) {
+          dispatch({
+            pair: [ card, match ],
+            type: 'pick-pair',
+            class: action.player === state.playerId ? 'owned' : 'lost'
+          })
+        } else {
+          setTimeout(dispatch, 2800, { type: 'unflip', id: payload.action.id })
+        }
       }
       return
     }

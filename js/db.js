@@ -39,9 +39,11 @@ export const init = (new Promise(async (s, f) => {
     if (play.ended) return f(Error('game already over'))
 
     const player = (await playRef.child('players').child(1).once('value')).val()
-    if (player !== null) return f(Error('not your game'))
-    // Join game
-    playRef.child('players').child(1).set(playerId)
+    if (player === null) {
+      playRef.child('players').child(1).set(playerId)
+    } else if (player !== playerId) {
+      return f(Error('not your game'))
+    }
 
     return s([ play.players[0], playerId ])
   }
