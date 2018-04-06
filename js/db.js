@@ -38,6 +38,8 @@ export const init = (new Promise(async (s, f) => {
     if (!play) return f(Error('game not found'))
     if (play.ended) return f(Error('game already over'))
 
+    const player = await playRef.child('players').child(1).once('value')
+    if (player !== null) return f(Error('not your game'))
     // Join game
     playRef.child('players').child(1).set(playerId)
 
@@ -45,17 +47,14 @@ export const init = (new Promise(async (s, f) => {
   }
 
   if (play) {
+    console.log(play.players)
     if (!play.players) return f(Error('broken game state'))
-    if (play.players[0] !== playerId) return f(Error('Not your game'))
+    if (play.players[0] !== playerId) return f(Error('not your game'))
     if (play.ended) return f(Error('game already over'))
     if (play.players[1]) return s([ playerId, play.players[1] ])
   } else {
     // Init a new game
-    playRef.child('players').child(0).set({
-      id: playerId,
-      health: 1000,
-      armor: 50,
-    })
+    playRef.child('players').child(0).set(playerId)
   }
 
   // Wait for the next player to join
