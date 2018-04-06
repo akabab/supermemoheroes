@@ -28,7 +28,7 @@ App.addEventListener('mousedown', e => {
 
 const clear = onRender(() => {
   if (getState().waiting) {
-    const url = `${location.origin}?play=${getState().playId}`
+    const url = `${location.origin}${location.pathname}?play=${getState().playId}`
     return App.innerHTML = `Waiting at <a href="${url}">${url}</a>`
   }
   if (!getState().players || !getState().cards.length) return
@@ -38,20 +38,18 @@ const clear = onRender(() => {
   cards.forEach((c, i) => c.state = getState().cards[i])
   clear()
   setInterval(request, 100)
-  let scores = []
   const stop = onRender(() => {
     const state = getState()
-    scores = state.scores.length ? state.scores : scores
-    console.log(scores[0] + scores[1])
+    // scores = state.scores.length ? state.scores : scores
 
-    if (scores[0] + scores[1] === cards.length / 2) {
-      const you = state.players[0] === state.playerId ? 0 : 1
-      const them = Number(!you)
-      App.innerHTML = scores[you] > scores[them]
-        ? `You Won (${scores[you]} vs ${scores[them]})`
-        : `You Loose (${scores[you]} vs ${scores[them]})`
-      return stop()
-    }
+    // if (scores[0] + scores[1] === cards.length / 2) {
+    //   const you = state.players[0] === state.playerId ? 0 : 1
+    //   const them = Number(!you)
+    //   App.innerHTML = scores[you] > scores[them]
+    //     ? `You Won (${scores[you]} vs ${scores[them]})`
+    //     : `You Loose (${scores[you]} vs ${scores[them]})`
+    //   return stop()
+    // }
     const now = Date.now()
     if (state.error) return App.innerHTML = state.error.message
     for (const card of cards) {

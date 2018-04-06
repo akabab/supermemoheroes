@@ -66,13 +66,12 @@ export const effect = async (state, payload, dispatch) => {
             ? 'owned'
             : 'lost'
 
-          const scores = [
-            cards.filter(c => c.owner === state.playerId).length / 2,
-            cards.filter(c => c.owner !== state.playerId).length / 2,
-          ]
-          dispatch({  type: 'update', state: { scores } })
+          // const scores = [
+          //   cards.filter(c => c.owner === state.playerId).length / 2,
+          //   cards.filter(c => c.owner !== state.playerId).length / 2,
+          // ]
+          // dispatch({  type: 'update', state: { scores } })
         }
-        console.log(state.scores)
         request()
       })
 
