@@ -58,7 +58,7 @@ export const init = (new Promise(async (s, f) => {
   }
 
   // Wait for the next player to join
-  playRef.child('playerB').on('value', snapshot => snapshot.val() === null
+  playRef.child('players').child(1).on('value', snapshot => snapshot.val() === null
     ? dispatch({ type: 'waiting-for-opponnent' })
     : s([ playerId, snapshot.val() ]))
 
