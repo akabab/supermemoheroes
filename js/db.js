@@ -18,13 +18,18 @@ const playId = localStorage.playId = params.get('play')
   || localStorage.playId
   || getRandId()
 
-dispatch({ type: 'update-state', state: { playId, playerId } })
+dispatch({ type: 'update', state: { playId, playerId } })
 
 export const init = (new Promise(async (s, f) => {
   const playRef = (await db).ref('play').child(playId)
 
-  playRef.child('state').on('value', snapshot =>
-    dispatch({ type: 'play', state: snapshot.val() }))
+  dispatch({
+    type: 'db',
+    db: {
+      cards: playRef.child('cards'),
+      actions: playRef.child('actions'),
+    },
+  })
 
   const play = (await playRef.once('value')).val()
 
@@ -34,18 +39,23 @@ export const init = (new Promise(async (s, f) => {
     if (play.ended) return f(Error('game already over'))
 
     // Join game
-    playRef.child('playerB').set(playerId)
+    playRef.child('players').child(1).set(playerId)
 
-    return s([ play.playerA, playerId ])
+    return s([ play.players[0], playerId ])
   }
 
   if (play) {
-    if (play.playerA !== playerId) return f(Error('Not your game'))
+    if (!play.players) return f(Error('broken game state'))
+    if (play.players[0] !== playerId) return f(Error('Not your game'))
     if (play.ended) return f(Error('game already over'))
-    if (play.playerB) return s([ playerId, play.playerB ])
+    if (play.players[1]) return s([ playerId, play.players[1] ])
   } else {
     // Init a new game
-    playRef.child('playerA').set(playerId)
+    playRef.child('players').child(0).set({
+      id: playerId,
+      health: 1000,
+      armor: 50,
+    })
   }
 
   // Wait for the next player to join
@@ -53,7 +63,7 @@ export const init = (new Promise(async (s, f) => {
     ? dispatch({ type: 'waiting-for-opponnent' })
     : s([ playerId, snapshot.val() ]))
 
-  dispatch({ type: 'update-state', state: { playRef } })
+  dispatch({ type: 'init-play' })
 }))
   .then(players => dispatch({ type: 'players', players }))
   .catch(error => dispatch({ type: 'error', error }))

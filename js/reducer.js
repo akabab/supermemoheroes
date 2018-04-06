@@ -1,9 +1,14 @@
 export const reducer = (state, payload) => {
   switch (payload.type) {
     case 'play': return { ...state, play: payload.state }
-    case 'update-state': return { ...state, ...payload.state }
+    case 'update': return { ...state, ...payload.state }
     case 'waiting-for-opponnent': return { ...state, waiting: true }
-    case 'players': return { ...state, waiting: false, players: payload.players }
+    case 'players': {
+      if (payload.players[0] === payload.players[1]) {
+        return { ...state, error: Error('You can not play against yourself') }
+      }
+      return { ...state, waiting: false, players: payload.players }
+    }
     case 'error': return { ...state, error: payload.error }
     case 'action': {
       const now = Date.now()
