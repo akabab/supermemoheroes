@@ -30,12 +30,12 @@ const newDeck = (heroes, size = 6 * 5 / 2) => {
 
 const fetchingHeroes = getHeroes()
 
-let actionQueueTimeout
-let db, gcd = Date.now()
+let queuedAction, gcdTimeout, db
 export const effect = async (state, payload, dispatch) => {
-  console.log(payload.type, state)
   request(state)
+  console.log(payload.type)
   switch (payload.type) {
+    case 'error': return console.log(state.error)
     case 'init-play': {
       const heroes = (await fetchingHeroes)
         .filter(hero => hero.images.xs.split('/xs/')[1] !== 'no-portrait.jpg')
@@ -61,23 +61,32 @@ export const effect = async (state, payload, dispatch) => {
         dispatch({ type: 'action-display', action: snapshot.val() }))
       return
     }
+    case 'gcd': {
+      clearTimeout(gcdTimeout)
+      if (state.gcdDiff < 0) return
+      gcdTimeout = setTimeout(dispatch, 100, { type: 'gcd', gcd: state.gcd })
+      return
+    }
+    case 'action-display': {
+      if (payload.action.type === 'flip') {
+        setTimeout(dispatch, 2000, { type: 'unflip', id: payload.action.id })
+      }
+      return
+    }
     case 'action': {
       const now = Date.now()
       const { action } = payload
-      const diff = now - gcd
+      const diff = now - state.gcd
 
       action.player = state.playerId
 
-      clearTimeout(actionQueueTimeout)
-
+      clearTimeout(queuedAction)
       if (diff < 1500) {
-        if (diff < 250) {
-          actionQueueTimeout = setTimeout(dispatch, Date.now() - gcd, payload)
-        }
-        return state
+        diff > 1200 && (queuedAction = setTimeout(dispatch, 1550 - diff, payload))
+        return
       }
-      gcd = now
-      return db.actions.child(now).set(payload.action)
+      dispatch({ type: 'gcd', gcd: now })
+      return db.actions.child(now).set(action)
     }
   }
 }

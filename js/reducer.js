@@ -1,7 +1,9 @@
 const actionsReducer = (state, action) => {
   switch (action.type) {
     case 'flip': {
-      state.cards[action.id].flipped = true
+      if (!state.cards) return state
+      state.cards[action.id].flipped = action.player
+
       return state
     }
   }
@@ -12,6 +14,15 @@ export const reducer = (state, payload) => {
     case 'play': return { ...state, play: payload.state }
     case 'update': return { ...state, ...payload.state }
     case 'waiting-for-opponnent': return { ...state, waiting: true }
+    case 'gcd': return {
+      ...state,
+      gcd: payload.gcd,
+      gcdDiff: 1500 - (Date.now() - payload.gcd)
+    }
+    case 'unflip': {
+      state.cards[payload.id].flipped = false
+      return state
+    }
     case 'players': {
       if (payload.players[0] === payload.players[1]) {
         return { ...state, error: Error('You can not play against yourself') }

@@ -24,9 +24,10 @@ const PlayerHUD = player => `
   </div>
 `
 
-const Header = players => `
+const Header = ({ players, gcdDiff }) => `
   <div id='header'>
     <div class='player-hud' style='justify-content: flex-start;'>${Lifebar(100)}</div>
+    <div id="gcd"></div>
     <div class='player-hud' style='justify-content: flex-end;'>${Lifebar(100)}</div>
   </div>
 `
@@ -47,7 +48,7 @@ const Board = game => `
 
 export const Game = game => `
   <div id='game'>
-    ${Header(game.players)}
+    ${Header(game)}
     ${Board(game)}
   </div>
 `
