@@ -19,33 +19,7 @@ export const reducer = (state, payload) => {
       return { ...state, waiting: false, players: payload.players }
     }
     case 'error': return { ...state, error: payload.error }
-    case 'action': {
-      const now = Date.now()
-      const { action } = payload
-      const diff = now - state.gcd
-
-      console.log({action})
-      if (action.player && action.player !== state.playerId) {
-        return {
-          ...actionsReducer(state, action),
-          actions: Object.assign(state.actions || {}, { [now]: action }),
-        }
-      }
-
-      action.player = state.playerId
-
-      if (diff < 1500) {
-        if (diff < 250) return { ...state, queuedAction: action }
-        return state
-      }
-
-      return {
-        ...actionsReducer(state, action),
-        gcd: now,
-        actions: Object.assign(state.actions || {}, { [now]: action }),
-        queuedAction: undefined
-      }
-    }
+    case 'action-display': return actionsReducer(state, payload.action)
     default:
       console.log('No case for', payload.type)
       return state

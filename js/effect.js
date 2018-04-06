@@ -31,7 +31,7 @@ const newDeck = (heroes, size = 6 * 5 / 2) => {
 const fetchingHeroes = getHeroes()
 
 let actionQueueTimeout
-let db
+let db, gcd = Date.now()
 export const effect = async (state, payload, dispatch) => {
   console.log(payload.type, state)
   request(state)
@@ -57,24 +57,27 @@ export const effect = async (state, payload, dispatch) => {
       db.cards.on('value', snapshot =>
         dispatch({ type: 'update', state: { cards: snapshot.val() } }))
 
-      db.actions.on('child_added', snapshot => {
-        const action = snapshot.val()
-        if (action.player === state.playerId) return
-        dispatch({ type: 'action', action })
-      })
+      db.actions.on('child_added', snapshot =>
+        dispatch({ type: 'action-display', action: snapshot.val() }))
       return
     }
     case 'action': {
       const now = Date.now()
-      clearTimeout(actionQueueTimeout)
-      console.log({action: payload.action, state})
-      if (state.queuedAction !== payload.action) {
-        if (payload.action.player !== state.playerId) return
+      const { action } = payload
+      const diff = now - gcd
 
-        return db.actions.child(now).set(payload.action)
+      action.player = state.playerId
+
+      clearTimeout(actionQueueTimeout)
+
+      if (diff < 1500) {
+        if (diff < 250) {
+          actionQueueTimeout = setTimeout(dispatch, Date.now() - gcd, payload)
+        }
+        return state
       }
-      actionQueueTimeout = setTimeout(dispatch, Date.now() - state.gcd, payload)
-      return
+      gcd = now
+      return db.actions.child(now).set(payload.action)
     }
   }
 }
